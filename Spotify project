@@ -1,5 +1,11 @@
--- Comparing  the difference between Spotify and Apple listeners for the biggest and second biggest artists 
--- Step 1: Identify the biggest and second biggest artists
+--What are the top 5 most streamed songs on Spotify, including their respective artists and formatted stream counts
+SELECT track_name, `artist(s)_name`, FORMAT(streams, 0) AS formatted_streams
+FROM popular_spotify_songs
+ORDER BY streams DESC
+LIMIT 5;
+
+-- Comparing  the difference between Spotify and Apple listeners for the biggest and second-biggest artists 
+-- Step 1: Identify the biggest and second-biggest artists
 WITH top_artists AS (
     SELECT `artist(s)_name`, COUNT(*) AS num_songs_in_spotify_playlists
     FROM popular_spotify_songs
@@ -9,7 +15,7 @@ WITH top_artists AS (
     LIMIT 2
 )
 
--- Step 2 and 3: Calculate and compare the total number of Spotify and Apple playlist appearances
+-- Steps 2 and 3: Calculate and compare the total number of Spotify and Apple playlist appearances
 SELECT 
     ta.`artist(s)_name`,
     SUM(ps.in_spotify_playlists) AS total_spotify_playlists,
@@ -19,3 +25,32 @@ FROM popular_spotify_songs ps
 JOIN top_artists ta ON ps.`artist(s)_name` = ta.`artist(s)_name`
 GROUP BY ta.`artist(s)_name`
 ORDER BY difference DESC;
+
+
+--What artist has more than 5 songs that are in the top 100? 
+-- Step 1: Identify the top 100 songs based on streams
+WITH top_100_songs AS (
+    SELECT track_name, artist(s)_name, FORMAT(streams, 0) AS formatted_streams
+    FROM popular_spotify_songs
+    ORDER BY streams DESC
+    LIMIT 100
+)
+
+-- Step 2: Find artists with at least three songs in the top 100 and list their songs
+SELECT artist(s)_name, track_name, formatted_streams
+FROM top_100_songs
+WHERE artist(s)_name IN (
+    SELECT artist(s)_name
+    FROM top_100_songs
+    GROUP BY artist(s)_name
+    HAVING COUNT(*) >= 5
+)
+ORDER BY artist(s)_name, formatted_streams DESC; 
+
+--Which artist has the highest average number of streams per track?
+
+SELECT artist(s)_name, AVG(streams) AS avg_streams
+FROM popular_spotify_songs
+GROUP BY artist(s)_name
+ORDER BY avg_streams DESC 
+LIMIT 1;
