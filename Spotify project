@@ -1,0 +1,21 @@
+-- Comparing  the difference between Spotify and Apple listeners for the biggest and second biggest artists 
+-- Step 1: Identify the biggest and second biggest artists
+WITH top_artists AS (
+    SELECT `artist(s)_name`, COUNT(*) AS num_songs_in_spotify_playlists
+    FROM popular_spotify_songs
+    WHERE in_spotify_playlists > 0
+    GROUP BY `artist(s)_name`
+    ORDER BY num_songs_in_spotify_playlists DESC
+    LIMIT 2
+)
+
+-- Step 2 and 3: Calculate and compare the total number of Spotify and Apple playlist appearances
+SELECT 
+    ta.`artist(s)_name`,
+    SUM(ps.in_spotify_playlists) AS total_spotify_playlists,
+    SUM(ps.in_apple_playlists) AS total_apple_playlists,
+    SUM(ps.in_spotify_playlists) - SUM(ps.in_apple_playlists) AS difference
+FROM popular_spotify_songs ps
+JOIN top_artists ta ON ps.`artist(s)_name` = ta.`artist(s)_name`
+GROUP BY ta.`artist(s)_name`
+ORDER BY difference DESC;
